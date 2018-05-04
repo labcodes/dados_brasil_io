@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Partido(models.Model):
-    sigla = models.CharField(max_length=15)
+    sigla = models.CharField(max_length=15, primary_key=True)
     nome = models.CharField(max_length=255)
     deferimento = models.DateField()
     presidente_nacional = models.CharField(max_length=255)
@@ -10,4 +10,3 @@ class Partido(models.Model):
 
     def __str__(self):
         return self.sigla
-
