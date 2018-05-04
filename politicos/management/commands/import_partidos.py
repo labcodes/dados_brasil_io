@@ -1,5 +1,4 @@
-import rows
-from dateutil.parser import parse
+import requests
 from django.core.management import BaseCommand
 
 from politicos.models import Partido
@@ -7,14 +6,17 @@ from politicos.models import Partido
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        dados = rows.import_from_csv('partidos.csv')
+        partidos = []
 
-        for row in dados:
-            Partido.objects.create(
-                sigla=row.sigla,
-                nome=row.nome,
-                deferimento=parse(row.deferimento, dayfirst=True),
-                presidente_nacional=row.pres_nacional,
-                legenda=row.no_da_legenda
-            )
+        camara_url = 'https://dadosabertos.camara.leg.br/api/v2/partidos/?formato=json&itens=100'
 
+        resposta = requests.get(camara_url).json()
+
+        for partido in resposta['dados']:
+            partidos.append(Partido(
+                id_camara=partido['id'],
+                nome=partido['nome'],
+                sigla=partido['sigla'],
+            ))
+
+        Partido.objects.bulk_create(partidos)
