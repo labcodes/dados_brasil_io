@@ -2,7 +2,8 @@ import csv
 import rows
 from django.core.management import BaseCommand
 from django.db import transaction
-from dados.models import Socio, Empresa
+
+from empresas.models import Socio, Empresa
 
 class Command(BaseCommand):
 
