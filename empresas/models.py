@@ -56,13 +56,7 @@ class Socio(models.Model):
     )
 
     nome = models.CharField(max_length=255, null=True, db_index=True)
-    empresa_origem = models.ForeignKey(
-        Empresa,
-        related_name='participacao_em_sociedades',
-        null=True,
-        on_delete=models.PROTECT,
-        db_index=True,
-    )
+    cpf_cnpj_socio = models.CharField(max_length=14, null=True, db_index=True)
     tipo_socio = models.PositiveSmallIntegerField(
         choices=TIPOS_SOCIO,
         null=True,

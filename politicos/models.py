@@ -10,3 +10,15 @@ class Partido(models.Model):
 
     def __str__(self):
         return self.sigla
+
+
+class Deputado(models.Model):
+    id_camara = models.IntegerField()
+    nome = models.CharField(max_length=255)
+    partido = models.ForeignKey(Partido)
+    uf = models.ForeignKey('comum.Estado')
+    id_legislatura = models.IntegerField()
+
+    def __str__(self):
+        return f'{self.nome} - {self.partido_id}'
+
