@@ -25,7 +25,7 @@ class Command(BaseCommand):
         while proxima_pagina:
             for deputado in resposta['dados']:
                 deputados.append(Deputado(
-                    id_camara=deputado['id'],
+                    id=deputado['id'],
                     nome=deputado['nome'],
                     partido_id=deputado['siglaPartido'],
                     uf_id=deputado['siglaUf'],
