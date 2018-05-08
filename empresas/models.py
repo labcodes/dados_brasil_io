@@ -4,9 +4,37 @@ from django.db import models
 class Empresa(models.Model):
     cnpj = models.CharField(max_length=14, primary_key=True)
     nome = models.CharField(max_length=255, null=True, db_index=True)
+    uf = models.ForeignKey(
+        'comum.Estado',
+        db_index=True,
+        related_name='empresas',
+        on_delete=models.PROTECT,
+    )
+    empresas = models.ManyToManyField(
+        'empresas.Empresa',
+        through='Sociedade',
+        through_fields=('socio_pessoa_juridica', 'empresa'),
+    )
+
+class PessoaFisica(models.Model):
+    nome = models.CharField(max_length=255, null=True, db_index=True)
+    empresas = models.ManyToManyField(
+        'empresas.Empresa',
+        through='Sociedade',
+        through_fields=('socio_pessoa_fisica', 'empresa'),
+    )
 
 
-class Socio(models.Model):
+class Estrangeiro(models.Model):
+    nome = models.CharField(max_length=255, null=True, db_index=True)
+    empresas = models.ManyToManyField(
+        'empresas.Empresa',
+        through='Sociedade',
+        through_fields=('socio_estrangeiro', 'empresa'),
+    )
+
+
+class Sociedade(models.Model):
     TIPOS_SOCIO = (
         (1, 'Pessoa Jurídica'),
         (2, 'Pessoa Física'),
@@ -55,8 +83,6 @@ class Socio(models.Model):
         (75, 'Fundador Residente ou Domiciliado no Exterior'),
     )
 
-    nome = models.CharField(max_length=255, null=True, db_index=True)
-    cpf_cnpj_socio = models.CharField(max_length=14, null=True, db_index=True)
     tipo_socio = models.PositiveSmallIntegerField(
         choices=TIPOS_SOCIO,
         null=True,
@@ -68,9 +94,29 @@ class Socio(models.Model):
     )
     empresa = models.ForeignKey(
         Empresa,
-        related_name='socios',
+        related_name='sociedades',
         null=True,
         on_delete=models.PROTECT,
         db_index=True
     )
-
+    socio_pessoa_juridica = models.ForeignKey(
+        Empresa,
+        related_name='participacoes_sociedades',
+        null=True,
+        on_delete=models.PROTECT,
+        db_index=True
+    )
+    socio_pessoa_fisica = models.ForeignKey(
+        PessoaFisica,
+        related_name='participacoes_sociedades',
+        null=True,
+        on_delete=models.PROTECT,
+        db_index=True
+    )
+    socio_estrangeiro = models.ForeignKey(
+        Estrangeiro,
+        related_name='participacoes_sociedades',
+        null=True,
+        on_delete=models.PROTECT,
+        db_index=True
+    )
