@@ -60,6 +60,7 @@ class GastoCotaParlamentar(models.Model):
         related_name='gastos_deputados',
         db_index=True,
         on_delete=models.PROTECT,
+        null=True,
     )
 
     def __str__(self):
