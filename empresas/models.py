@@ -14,6 +14,7 @@ class Empresa(models.Model):
         'empresas.Empresa',
         through='Sociedade',
         through_fields=('socio_pessoa_juridica', 'empresa'),
+        db_index=True,
     )
 
 class PessoaFisica(models.Model):
@@ -22,6 +23,7 @@ class PessoaFisica(models.Model):
         'empresas.Empresa',
         through='Sociedade',
         through_fields=('socio_pessoa_fisica', 'empresa'),
+        db_index=True,
     )
 
 
@@ -31,6 +33,7 @@ class Estrangeiro(models.Model):
         'empresas.Empresa',
         through='Sociedade',
         through_fields=('socio_estrangeiro', 'empresa'),
+        db_index=True,
     )
 
 
