@@ -67,18 +67,17 @@ class GastoCotaParlamentar(models.Model):
         return f'{self.valor_documento} {self.mes}/{self.ano}'
 
     class Meta:
-        # indexes = [
-        #     models.Index(fields=['-data_emissao']),
-        #     models.Index(fields=['data_emissao']),
-        #     models.Index(fields=['id_documento']),
-        #     models.Index(fields=['ressarcimento']),
-        #     models.Index(fields=['cpf']),
-        #     models.Index(fields=['descricao']),
-        #     models.Index(fields=['descricao_especificacao']),
-        #     models.Index(fields=['fornecedor']),
-        #     models.Index(fields=['valor_liquido']),
-        #     models.Index(fields=['valor_documento']),
-        #     models.Index(fields=['deputado']),
-        #     models.Index(fields=['empresa']),
-        # ]
+        indexes = [
+            models.Index(fields=['-data_emissao']),
+            models.Index(fields=['data_emissao']),
+            models.Index(fields=['mes']),
+            models.Index(fields=['ano']),
+            models.Index(fields=['descricao']),
+            models.Index(fields=['descricao_especificacao']),
+            models.Index(fields=['fornecedor']),
+            models.Index(fields=['valor_liquido']),
+            models.Index(fields=['valor_documento']),
+            models.Index(fields=['deputado']),
+            models.Index(fields=['empresa']),
+        ]
         ordering = ['-data_emissao']
