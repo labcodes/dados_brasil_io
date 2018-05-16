@@ -1,4 +1,29 @@
 from django.db import models
+from django.db.models import Avg, Q, Sum
+
+
+class DeputadoQuerySet(models.QuerySet):
+
+    def annotate_gasto_mensal_por_deputado(self):
+        meses = range(1, 13)
+        anos = range(2009, 2019)
+        annotations = {
+            f'gastos_{ano}_{mes:02}': Sum(
+                'gastos__valor_liquido',
+                filter=Q(gastos__mes=mes, gastos__ano=ano)
+            )
+            for ano in anos for mes in meses
+        }
+        return self.annotate(**annotations)
+
+    def get_media_mensal(self):
+        meses = range(1, 13)
+        anos = range(2009, 2019)
+        aggregations = {
+            f'media_{ano}_{mes:02}': Avg(f'gastos_{ano}_{mes:02}')
+            for ano in anos for mes in meses
+        }
+        return self.annotate_gasto_mensal_por_deputado().aggregate(**aggregations)
 
 
 class Partido(models.Model):
@@ -16,6 +41,8 @@ class Deputado(models.Model):
     uf = models.ForeignKey('comum.Estado', on_delete=models.PROTECT)
     id_legislatura = models.IntegerField()
     carteira_parlamentar = models.IntegerField(null=True)
+
+    objects = DeputadoQuerySet.as_manager()
 
     def __str__(self):
         return f'{self.nome} - {self.partido_id}'
