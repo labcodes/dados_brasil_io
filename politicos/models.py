@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Avg, Q, Sum
+from django.db.models import Avg, Prefetch, Q, Sum
 
 
 class DeputadoQuerySet(models.QuerySet):
@@ -24,6 +24,11 @@ class DeputadoQuerySet(models.QuerySet):
             for ano in anos for mes in meses
         }
         return self.annotate_gasto_mensal_por_deputado().aggregate(**aggregations)
+
+    def prefetch_gastos_mes(self, mes, ano):
+        gastos_queryset = GastoCotaParlamentar.objects.select_related('empresa').filter(mes=mes, ano=ano)
+        prefetch = Prefetch('gastos', queryset=gastos_queryset)
+        return self.prefetch_related(prefetch)
 
 
 class Partido(models.Model):
