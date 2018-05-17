@@ -1,6 +1,11 @@
 from django.db import models
 
 
+class EmpresaQuerySet(models.QuerySet):
+
+    pass
+
+
 class Empresa(models.Model):
     cnpj = models.CharField(max_length=14, primary_key=True)
     nome = models.CharField(max_length=255, null=True, db_index=True)
@@ -10,31 +15,16 @@ class Empresa(models.Model):
         related_name='empresas',
         on_delete=models.PROTECT,
     )
-    empresas = models.ManyToManyField(
-        'empresas.Empresa',
-        through='Sociedade',
-        through_fields=('socio_pessoa_juridica', 'empresa'),
-        db_index=True,
-    )
+
+    objects = EmpresaQuerySet.as_manager()
+
 
 class PessoaFisica(models.Model):
     nome = models.CharField(max_length=255, null=True, db_index=True)
-    empresas = models.ManyToManyField(
-        'empresas.Empresa',
-        through='Sociedade',
-        through_fields=('socio_pessoa_fisica', 'empresa'),
-        db_index=True,
-    )
 
 
 class Estrangeiro(models.Model):
     nome = models.CharField(max_length=255, null=True, db_index=True)
-    empresas = models.ManyToManyField(
-        'empresas.Empresa',
-        through='Sociedade',
-        through_fields=('socio_estrangeiro', 'empresa'),
-        db_index=True,
-    )
 
 
 class Sociedade(models.Model):
