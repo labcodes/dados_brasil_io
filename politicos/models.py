@@ -41,6 +41,13 @@ class DeputadoQuerySet(models.QuerySet):
         prefetch = Prefetch('gastos', queryset=gastos_queryset)
         return self.prefetch_related(prefetch)
 
+    def annotate_gastos_acima_dobro(self, descricao_gasto):
+        media = GastoCotaParlamentar.objects.filter_descricao(descricao_gasto).media()
+        acima_dobro = Q(gastos__descricao=descricao_gasto, gastos__valor_liquido__gt=media * 2)
+        count_acima_dobro = Count('pk', filter=acima_dobro)
+        count_geral = Count('pk', filter=Q(gastos__descricao=descricao_gasto))
+        return self.annotate(gastos_acima_dobro=count_acima_dobro, qtd_gastos=count_geral)
+
 
 class GastoCotaParlamentarQuerySet(models.QuerySet):
 
