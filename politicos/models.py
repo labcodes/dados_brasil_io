@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Avg, Prefetch, Q, Sum
+from django.db.models import Avg, F, Prefetch, Q, Sum
 
 
 class DeputadoQuerySet(models.QuerySet):
@@ -16,6 +16,15 @@ class DeputadoQuerySet(models.QuerySet):
         }
         return self.annotate(**annotations)
 
+    def annotate_gasto_no_mes_por_deputado(self, mes, ano):
+        annotation = {
+            f'gastos_{ano}_{mes:02}': Sum(
+                'gastos__valor_liquido',
+                filter=Q(gastos__mes=mes, gastos__ano=ano)
+            )
+        }
+        return self.annotate(**annotation)
+
     def get_media_mensal(self):
         meses = range(1, 13)
         anos = range(2009, 2019)
@@ -25,10 +34,22 @@ class DeputadoQuerySet(models.QuerySet):
         }
         return self.annotate_gasto_mensal_por_deputado().aggregate(**aggregations)
 
-    def prefetch_gastos_mes(self, mes, ano):
-        gastos_queryset = GastoCotaParlamentar.objects.select_related('empresa').filter(mes=mes, ano=ano)
+    def prefetch_gastos(self, **kwargs):
+        gastos_queryset = GastoCotaParlamentar.objects.select_related(
+            'empresa'
+        ).filter(**kwargs)
         prefetch = Prefetch('gastos', queryset=gastos_queryset)
         return self.prefetch_related(prefetch)
+
+
+class GastoCotaParlamentarQuerySet(models.QuerySet):
+
+    def filter_descricao(self, descricao):
+        return self.filter(descricao=descricao)
+
+    def media(self):
+        return self.aggregate(media=Avg('valor_liquido'))['media']
+
 
 
 class Partido(models.Model):
@@ -94,6 +115,8 @@ class GastoCotaParlamentar(models.Model):
         on_delete=models.PROTECT,
         null=True,
     )
+
+    objects = GastoCotaParlamentarQuerySet.as_manager()
 
     def __str__(self):
         return f'{self.valor_documento} {self.mes}/{self.ano}'
