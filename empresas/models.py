@@ -1,5 +1,6 @@
 from django.db import models
-from django.db.models import OuterRef, Subquery
+from django.db.models import Case, F, OuterRef, Q, Subquery, Sum, Value, When
+from django.db.models.functions import Coalesce
 
 
 class EmpresaQuerySet(models.QuerySet):
@@ -14,6 +15,31 @@ class EmpresaQuerySet(models.QuerySet):
                 )
             )
         )
+
+    def annotate_graus_sociedades(self, grau):
+        sociedade_empresa = 'sociedades__socio_pessoa_juridica'
+        lookups = lambda x: '__'.join([sociedade_empresa] * x)
+        annotate_graus_sociedades = {
+            f'grau_{n}': Coalesce(
+                Sum(
+                    Case(
+                        When(
+                            Q(**{f'{lookups(n)}__isnull': False})
+                            &
+                            ~Q(**{f'{lookups(n)}': F(f'{lookups(n - 1)}' if n - 1 else 'cnpj')})
+                            &
+                            ~Q(**{f'{lookups(n)}': F(f'{lookups(n - 2)}' if n - 2 > 0 else 'cnpj')}),
+                            then=Value(1)
+                        ),
+                        output_field=models.IntegerField(),
+                    )
+                ),
+                0,
+            )
+            for n in range(1, grau + 1)
+        }
+        return self.annotate(**annotate_graus_sociedades)
+
 
 
 class Empresa(models.Model):
