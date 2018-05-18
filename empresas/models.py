@@ -1,9 +1,19 @@
 from django.db import models
+from django.db.models import OuterRef, Subquery
 
 
 class EmpresaQuerySet(models.QuerySet):
 
-    pass
+    def annotate_deputados(self):
+        from politicos.models import Deputado
+        deputados_qs = Deputado.objects.values_list('nome', flat=True)
+        return self.annotate(
+            deputado=Subquery(
+                deputados_qs.filter(
+                    nome__in=OuterRef('sociedades__socio_pessoa_fisica__nome')
+                )
+            )
+        )
 
 
 class Empresa(models.Model):
