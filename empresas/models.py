@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Case, F, OuterRef, Q, Subquery, Sum, Value, When
+from django.db.models import Case, Count, F, OuterRef, Q, Subquery, Sum, Value, When
 from django.db.models.functions import Coalesce
 
 
@@ -16,9 +16,15 @@ class EmpresaQuerySet(models.QuerySet):
             )
         )
 
+    def annotate_deputados2(self):
+        from politicos.models import Deputado
+        deputados_qs = Deputado.objects.values_list('nome', flat=True)
+        return self.annotate(
+            deputado=Q(sociedades__socio_pessoa_fisica__nome__in=deputados_qs)
+        )
+
     def annotate_graus_sociedades(self, grau):
-        sociedade_empresa = 'sociedades__socio_pessoa_juridica'
-        lookups = lambda x: '__'.join([sociedade_empresa] * x)
+        lookups = lambda x: '__'.join(['participacoes_sociedades__socio_pessoa_juridica'] * x)
         annotate_graus_sociedades = {
             f'grau_{n}': Coalesce(
                 Sum(
@@ -35,6 +41,21 @@ class EmpresaQuerySet(models.QuerySet):
                     )
                 ),
                 0,
+            )
+            for n in range(1, grau + 1)
+        }
+        return self.annotate(**annotate_graus_sociedades)
+
+    def annotate_graus_sociedades2(self, grau):
+        lookups = lambda x: '__'.join(['participacoes_sociedades__socio_pessoa_juridica'] * x)
+        annotate_graus_sociedades = {
+            f'grau_{n}': Count(
+                Q(**{f'{lookups(n)}__isnull': False})
+                &
+                ~Q(**{f'{lookups(n)}': F(f'{lookups(n - 1)}' if n - 1 else 'cnpj')})
+                &
+                ~Q(**{f'{lookups(n)}': F(f'{lookups(n - 2)}' if n - 2 > 0 else 'cnpj')}),
+                then=Value(1)
             )
             for n in range(1, grau + 1)
         }
