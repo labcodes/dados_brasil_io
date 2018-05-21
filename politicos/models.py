@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Avg, F, Prefetch, Q, Sum
+from django.db.models import Avg, F, FilteredRelation, Prefetch, Q, Sum
 
 
 class DeputadoQuerySet(models.QuerySet):
@@ -24,6 +24,16 @@ class DeputadoQuerySet(models.QuerySet):
             )
         }
         return self.annotate(**annotation)
+
+    def annotate_gasto_no_mes_por_deputado2(self, mes, ano):
+        return self.annotate(
+            gastos_filtrados=FilteredRelation(
+                'gastos',
+                condition=Q(gastos__mes=mes, gastos__ano=ano)
+            )
+        ).annotate(
+            **{f'gastos_{ano}_{mes:02}': Sum('gastos_filtrados__valor_liquido')}
+        )
 
     def get_media_mensal(self):
         meses = range(1, 13)
