@@ -1,0 +1,32 @@
+version: '2'
+
+volumes:
+  brasilio: {}
+
+services:
+    database:
+        container_name: database
+        restart: always
+        env_file: .env
+        image: postgres:9.6
+        volumes:
+            - brasilio:/var/lib/postgresql/data
+        ports:
+            - 5433:5432
+
+    webserver:
+        container_name: webserver
+        restart: on-failure
+        image: maribedran/brasilio
+        build:
+            context: .
+            dockerfile: ./docker/django/Dockerfile
+        entrypoint:
+          - /entrypoint.sh
+        volumes:
+            - .:/app
+        links:
+            - database
+        ports:
+            - 8010:8000
+
