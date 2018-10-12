@@ -26,7 +26,7 @@ SECRET_KEY = '(wejnrxl&vvzs00a@*w4+oz2wa*41(vhw+re&qccz50$e4er3l'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=lambda x: x.split(','), default='localhost')
 
 
 # Application definition
