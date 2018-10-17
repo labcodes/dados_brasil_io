@@ -1,7 +1,7 @@
 from datetime import date
 from rest_framework import generics, serializers
-from rest_framework.response import Response
 
+from politicos.filters import DeputadoFilter
 from politicos.models import Deputado, GastoCotaParlamentar
 
 
@@ -24,6 +24,7 @@ class DeputadoSerializer(serializers.ModelSerializer):
 
 class DeputadoListView(generics.ListAPIView):
     serializer_class = DeputadoSerializer
+    filterset_class = DeputadoFilter
 
     def get_queryset(self):
         queryset = Deputado.objects.all().select_related('partido', 'uf')
