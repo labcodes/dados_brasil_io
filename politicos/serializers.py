@@ -6,11 +6,29 @@ from politicos.models import Deputado, GastoCotaParlamentar
 class GastoCotaParlamentarSerializer(serializers.ModelSerializer):
     class Meta:
         model = GastoCotaParlamentar
-        fields = '__all__'
+        fields = [
+            'id',
+            'data_emissao',
+            'ano',
+            'especificacao_subcota',
+            'mes',
+            'ressarcimento',
+            'cpf',
+            'descricao',
+            'descricao_especificacao',
+            'fornecedor',
+            'valor_documento',
+            'valor_glosa',
+            'valor_liquido',
+            'valor_restituicao',
+            'empresa',
+        ]
+        depth = 1
 
 
 class DeputadoSerializer(serializers.ModelSerializer):
     gastos_mensais = serializers.SerializerMethodField()
+    gastos = GastoCotaParlamentarSerializer(many=True)
 
     class Meta:
         model = Deputado
