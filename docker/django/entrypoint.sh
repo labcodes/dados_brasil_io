@@ -6,4 +6,5 @@ do
     sleep 2
 done
 
+python manage.py collectstatic
 python manage.py runserver 0.0.0.0:8000 --settings=dados_brasil_io.settings

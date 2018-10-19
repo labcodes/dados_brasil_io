@@ -128,6 +128,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+STATIC_ROOT = 'staticfiles'
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
