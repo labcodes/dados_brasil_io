@@ -28,13 +28,12 @@ class GastoCotaParlamentarSerializer(serializers.ModelSerializer):
 
 class DeputadoSerializer(serializers.ModelSerializer):
     gastos_mensais = serializers.SerializerMethodField()
-    gastos = GastoCotaParlamentarSerializer(many=True)
 
     class Meta:
         model = Deputado
         fields = [
             'id', 'nome', 'partido', 'uf', 'id_legislatura',
-            'gastos', 'gastos_mensais',
+            'gastos_mensais',
         ]
         depth = 2
 
@@ -43,3 +42,15 @@ class DeputadoSerializer(serializers.ModelSerializer):
             key: value for key, value in obj.__dict__.items()
             if key.startswith('gastos_')
         }
+
+
+class DeputadoGastosSerializer(serializers.ModelSerializer):
+    gastos = GastoCotaParlamentarSerializer(many=True)
+
+    class Meta:
+        model = Deputado
+        fields = [
+            'id', 'nome', 'partido', 'uf', 'id_legislatura',
+            'gastos',
+        ]
+        depth = 2
