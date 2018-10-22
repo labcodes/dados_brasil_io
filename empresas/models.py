@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Case, Count, F, OuterRef, Q, Subquery, Sum, Value, When
+from django.db.models import Case, Count, Exists, F, OuterRef, Q, Subquery, Sum, Value, When
 from django.db.models.functions import Coalesce
 
 

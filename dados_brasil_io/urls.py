@@ -16,9 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from politicos.views import DeputadoListView
+from empresas.views import EmpresaDetailView
+from politicos.views import DeputadoListView, DeputadoGastosView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('deputados/', DeputadoListView.as_view(), name='deputados'),
+    path('deputados-gastos', DeputadoGastosView.as_view(), name='deputados-gastos'),
+    path('empresa/<pk>/', EmpresaDetailView.as_view(), name='empresa'),
 ]

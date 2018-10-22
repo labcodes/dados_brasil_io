@@ -1,42 +1,21 @@
-from datetime import date
-from rest_framework import generics, serializers
-from rest_framework.response import Response
+from rest_framework import generics
 
-from politicos.models import Deputado, GastoCotaParlamentar
-
-
-class GastoCotaParlamentarSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = GastoCotaParlamentar
-        fields = '__all__'
-
-
-class DeputadoSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Deputado
-        fields = [
-            'id', 'nome', 'partido', 'uf', 'id_legislatura',
-            'gastos'
-        ]
-        depth = 2
+from politicos.filters import DeputadoFilter
+from politicos.models import Deputado
+from politicos.serializers import DeputadoSerializer, DeputadoGastosSerializer
 
 
 class DeputadoListView(generics.ListAPIView):
     serializer_class = DeputadoSerializer
+    filterset_class = DeputadoFilter
+    queryset = Deputado.objects.all().select_related(
+        'partido', 'uf'
+    )
 
-    def get_queryset(self):
-        queryset = Deputado.objects.all().select_related('partido', 'uf')
 
-        hoje = date.today()
-        filtros = self.request.query_params.dict()
-        filtros.setdefault('gastos_mes', hoje.month)
-        filtros.setdefault('gastos_ano', hoje.year)
-
-        queryset = queryset.prefetch_gastos(**{
-            campo.replace('gastos_', ''): valor
-            for campo, valor in filtros.items()
-            if campo.startswith('gastos_')
-        })
-
-        return queryset
+class DeputadoGastosView(generics.ListAPIView):
+    serializer_class = DeputadoGastosSerializer
+    filterset_class = DeputadoFilter
+    queryset = Deputado.objects.all().select_related(
+        'partido', 'uf'
+    ).prefetch_related('gastos__empresa')

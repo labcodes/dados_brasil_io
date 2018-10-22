@@ -1,5 +1,6 @@
 from django.db import models
-from django.db.models import Avg, F, FilteredRelation, Prefetch, Q, Sum
+from django.db.models import Avg, Case, Count, Exists, F, FilteredRelation, OuterRef, Prefetch, Q, Sum, Value, When
+from django.db.models.functions import Coalesce
 
 
 class DeputadoQuerySet(models.QuerySet):
@@ -54,9 +55,31 @@ class DeputadoQuerySet(models.QuerySet):
     def annotate_gastos_acima_dobro(self, descricao_gasto):
         media = GastoCotaParlamentar.objects.filter_descricao(descricao_gasto).media()
         acima_dobro = Q(gastos__descricao=descricao_gasto, gastos__valor_liquido__gt=media * 2)
-        count_acima_dobro = Count('pk', filter=acima_dobro)
-        count_geral = Count('pk', filter=Q(gastos__descricao=descricao_gasto))
-        return self.annotate(gastos_acima_dobro=count_acima_dobro, qtd_gastos=count_geral)
+        return self.annotate(
+            qtd_gastos=Count('gastos', filter=Q(gastos__descricao=descricao_gasto)),
+            qtd_acima_dobro=Coalesce(
+                Sum(
+                    Case(
+                        When(
+                            Q(gastos__valor_liquido__gt=media * 2, gastos__descricao=descricao_gasto),
+                            then=Value(1)
+                        ),
+                        output_field=models.IntegerField()
+                    )
+                ),
+                0
+            )
+        )
+
+    def annotate_empresas(self):
+        from empresas.models import Empresa
+        empresas_qs = Empresa.objects.filter(
+            sociedades__socio_pessoa_fisica__nome=OuterRef('nome'),
+            uf=OuterRef('uf')
+        )
+        return self.annotate(
+            empresas=Exists(empresas_qs)
+        )
 
 
 class GastoCotaParlamentarQuerySet(models.QuerySet):
