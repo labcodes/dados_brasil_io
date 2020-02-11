@@ -4,7 +4,7 @@ chardet==3.0.4
 cycler==0.10.0
 dateutils==0.6.6
 decorator==4.2.1
-Django==2.0.4
+Django==2.2.10
 djangorestframework==3.9.1
 idna==2.6
 ipdb==0.11
